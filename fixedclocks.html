@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Merriweather Clocks — Morganton & Paris</title>
+
+<!-- Merriweather Font -->
+<link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg: #FAF4E4;
+    --text: #5A1F1F;
+    --clock-bg: #FFF9F0;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Merriweather', serif;
+    text-align: center;
+  }
+
+  h1 {
+    margin-top: 20px;
+    margin-bottom: 5px;
+    font-size: 22px;
+    font-weight: 700;
+  }
+
+  .clock-wrapper {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+
+  .clock-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .city {
+    font-size: 16px;
+    margin-bottom: 3px;
+    text-transform: lowercase;
+  }
+
+  .digital {
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+
+  canvas {
+    width: 140px !important;
+    height: 140px !important;
+    background: var(--clock-bg);
+    border-radius: 50%;
+  }
+</style>
+</head>
+
+<body>
+
+<h1>time</h1>
+
+<div class="clock-wrapper">
+
+  <!-- Morganton -->
+  <div class="clock-block">
+    <div class="city">morganton</div>
+    <div class="digital" id="mg-digital"></div>
+    <canvas id="mg-analog" width="260" height="260"></canvas>
+  </div>
+
+  <!-- Paris -->
+  <div class="clock-block">
+    <div class="city">paris</div>
+    <div class="digital" id="pa-digital"></div>
+    <canvas id="pa-analog" width="260" height="260"></canvas>
+  </div>
+
+</div>
+
+<script>
+function updateTime() {
+  const MG = "America/New_York";  // Morganton NC
+  const PA = "Europe/Paris";      // Paris
+
+  // DIGITAL
+  document.getElementById("mg-digital").textContent =
+    new Date().toLocaleTimeString("en-US", { timeZone: MG, hour12: false });
+  document.getElementById("pa-digital").textContent =
+    new Date().toLocaleTimeString("en-US", { timeZone: PA, hour12: false });
+
+  // ANALOG
+  drawAnalog("mg-analog", MG);
+  drawAnalog("pa-analog", PA);
+}
+
+function drawAnalog(id, tz) {
+  const canvas = document.getElementById(id);
+  const ctx = canvas.getContext("2d");
+
+  const now = new Date();
+  const local = new Date(now.toLocaleString("en-US", { timeZone: tz }));
+
+  let h = local.getHours();
+  let m = local.getMinutes();
+  let s = local.getSeconds();
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const r = canvas.width / 2;
+
+  // Tick marks
+  ctx.save();
+  ctx.translate(r, r);
+  ctx.strokeStyle = "#5A1F1F";
+
+  for (let i = 0; i < 12; i++) {
+    ctx.rotate(Math.PI/6);
+    ctx.beginPath();
+    ctx.moveTo(0, -r + 18);
+    ctx.lineTo(0, -r + 32);
+    ctx.lineWidth = 3;
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  // Hour hand
+  ctx.save();
+  ctx.translate(r, r);
+  let hourAngle = ((h % 12) + m/60) * (Math.PI/6);
+  ctx.rotate(hourAngle);
+  ctx.beginPath();
+  ctx.moveTo(0, 15);
+  ctx.lineTo(0, -r + 70);
+  ctx.lineWidth = 6;
+  ctx.stroke();
+  ctx.restore();
+
+  // Minute hand
+  ctx.save();
+  ctx.translate(r, r);
+  let minAngle = (m + s/60) * (Math.PI/30);
+  ctx.rotate(minAngle);
+  ctx.beginPath();
+  ctx.moveTo(0, 20);
+  ctx.lineTo(0, -r + 50);
+  ctx.lineWidth = 4;
+  ctx.stroke();
+  ctx.restore();
+
+  // Second hand
+  ctx.save();
+  ctx.translate(r, r);
+  let secAngle = s * (Math.PI/30);
+  ctx.rotate(secAngle);
+  ctx.beginPath();
+  ctx.moveTo(0, 25);
+  ctx.lineTo(0, -r + 40);
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.restore();
+}
+
+updateTime();
+setInterval(updateTime, 1000);
+</script>
+
+</body>
+</html>
